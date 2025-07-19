@@ -25,9 +25,57 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-        <Stack.Screen name='+not-found' />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: '#ffffff' },
+          animation: 'slide_from_right',
+        }}
+      >
+        {/* Index Screen - Auto redirect */}
+        <Stack.Screen
+          name='index'
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+          }}
+        />
+
+        {/* Auth Group - Login flow */}
+        <Stack.Screen
+          name='(auth)'
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+          }}
+        />
+
+        {/* Consent Screen - Full screen without tabs */}
+        <Stack.Screen
+          name='consent'
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+            presentation: 'modal',
+          }}
+        />
+
+        {/* Main App - Tabs */}
+        <Stack.Screen
+          name='(tabs)'
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        {/* 404 Screen */}
+        <Stack.Screen
+          name='+not-found'
+          options={{
+            title: 'Page Not Found',
+            headerShown: true,
+          }}
+        />
       </Stack>
       <StatusBar style='auto' />
     </ThemeProvider>
