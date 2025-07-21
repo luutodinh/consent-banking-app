@@ -23,6 +23,14 @@ export default function RootLayout() {
     return null;
   }
 
+  // useEffect(() => {
+  //   const subscription = Linking.addEventListener('url', ({ url }) => {
+  //     console.log('📦This is spending tracker', url);
+  //   });
+
+  //   return () => subscription.remove();
+  // }, []);
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack

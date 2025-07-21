@@ -1,13 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import {
+  Alert,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Checkbox from '@/components/ui/Checkbox';
 import Logo from '@/components/ui/Logo';
+import {
+  BANKING_APP_DEEP_LINK,
+  CLIENT_ID,
+  CLIENT_SECRET,
+  CODE_CHALLENGE_METHOD,
+  REALM,
+  REDIRECT_URI,
+  SCOPE,
+} from '@/constants/env';
+import {
+  generateCodeChallenge,
+  generateCodeVerifier,
+} from '@/utils/PKCE-challenge';
 
 interface Permission {
   id: string;
@@ -21,50 +42,51 @@ interface Permission {
 const PERMISSIONS: Permission[] = [
   {
     id: 'account_info',
-    title: 'Account Information',
+    title: 'Thông Tin Tài Khoản',
     description:
-      'Access to your account details, account numbers, and basic account information',
+      'Truy cập chi tiết tài khoản, số tài khoản và thông tin tài khoản cơ bản',
     icon: 'card-outline',
     required: true,
     enabled: true,
   },
   {
     id: 'balance',
-    title: 'Account Balance',
-    description: 'View current account balances and available funds',
+    title: 'Số Dư Tài Khoản',
+    description: 'Xem số dư tài khoản hiện tại và số tiền khả dụng',
     icon: 'wallet-outline',
     required: true,
     enabled: true,
   },
   {
     id: 'transactions',
-    title: 'Transaction History',
-    description: 'Access to your transaction history for the past 12 months',
+    title: 'Lịch Sử Giao Dịch',
+    description: 'Truy cập lịch sử giao dịch của bạn trong 12 tháng qua',
     icon: 'list-outline',
     required: false,
     enabled: true,
   },
   {
     id: 'standing_orders',
-    title: 'Standing Orders',
-    description: 'View and manage your recurring payments and standing orders',
+    title: 'Lệnh Chuyển Tiền Định Kỳ',
+    description:
+      'Xem và quản lý các khoản thanh toán định kỳ và lệnh chuyển tiền',
     icon: 'repeat-outline',
     required: false,
     enabled: false,
   },
   {
     id: 'direct_debits',
-    title: 'Direct Debits',
-    description:
-      'Access to your direct debit information and payment schedules',
+    title: 'Ghi Nợ Trực Tiếp',
+    description: 'Truy cập thông tin ghi nợ trực tiếp và lịch trình thanh toán',
     icon: 'arrow-down-circle-outline',
     required: false,
     enabled: false,
   },
   {
     id: 'beneficiaries',
-    title: 'Saved Beneficiaries',
-    description: 'Access to your saved payment recipients and beneficiary list',
+    title: 'Người Thụ Hưởng Đã Lưu',
+    description:
+      'Truy cập danh sách người nhận thanh toán và người thụ hưởng đã lưu',
     icon: 'people-outline',
     required: false,
     enabled: false,
@@ -90,9 +112,9 @@ export default function ConsentScreen() {
 
     if (enabledPermissions.length === 0) {
       Alert.alert(
-        'No Permissions Selected',
-        'Please select at least one permission to continue.',
-        [{ text: 'OK' }]
+        'Chưa Chọn Quyền Nào',
+        'Vui lòng chọn ít nhất một quyền để tiếp tục.',
+        [{ text: 'Đồng Ý' }]
       );
       return;
     }
@@ -102,22 +124,41 @@ export default function ConsentScreen() {
     try {
       // Simulate API call to grant permissions
       await new Promise((resolve) => setTimeout(resolve, 2000));
+      const state = crypto.randomUUID();
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-      Alert.alert(
-        'Access Granted',
-        'You have successfully granted access to your banking data. The third-party provider can now access the selected information.',
-        [
-          {
-            text: 'Continue',
-            onPress: () => router.replace('/(tabs)'),
-          },
-        ]
+      await AsyncStorage.setItem('state', state);
+      await AsyncStorage.setItem('code_verifier', codeVerifier);
+
+      Linking.openURL(
+        `${BANKING_APP_DEEP_LINK}/--/?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+          REDIRECT_URI
+        )}&realm=${REALM}&client_secret=${CLIENT_SECRET}&code_challenge=${codeChallenge}&code_challenge_method=${CODE_CHALLENGE_METHOD}&state=${state}&scope=${SCOPE}`
       );
+      // Linking.openURL(
+      //   `http://localhost:8082?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      //     REDIRECT_URI
+      //   )}&keycloak_url=${encodeURIComponent(
+      //     KEYCLOAK_URL
+      //   )}&realm=${REALM}&client_secret=${CLIENT_SECRET}&code_challenge=${CODE_CHALLENGE}`
+      // );
+
+      // Alert.alert(
+      //   'Cấp Quyền Thành Công',
+      //   'Bạn đã cấp quyền truy cập dữ liệu ngân hàng thành công. Ứng dụng MoneyTracker giờ đây có thể truy cập các thông tin đã chọn.',
+      //   [
+      //     {
+      //       text: 'Tiếp Tục',
+      //       onPress: () => router.replace('/(tabs)'),
+      //     },
+      //   ]
+      // );
     } catch (error) {
       Alert.alert(
-        'Error',
-        'An error occurred while processing your consent. Please try again.',
-        [{ text: 'OK' }]
+        'Lỗi',
+        'Đã xảy ra lỗi khi xử lý sự đồng ý của bạn. Vui lòng thử lại.',
+        [{ text: 'Đồng Ý' }]
       );
     } finally {
       setIsLoading(false);
@@ -126,12 +167,12 @@ export default function ConsentScreen() {
 
   const handleDeny = () => {
     Alert.alert(
-      'Deny Access',
-      'Are you sure you want to deny access? This will prevent the third-party provider from accessing your banking data.',
+      'Từ Chối Truy Cập',
+      'Bạn có chắc chắn muốn từ chối truy cập? Điều này sẽ ngăn ứng dụng MoneyTracker truy cập vào dữ liệu ngân hàng của bạn.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Hủy', style: 'cancel' },
         {
-          text: 'Deny Access',
+          text: 'Từ Chối',
           style: 'destructive',
           onPress: () => router.replace('/(auth)/login'),
         },
@@ -152,11 +193,13 @@ export default function ConsentScreen() {
           <Logo
             size='sm'
             variant='horizontal'
-            title='SecureBank'
-            subtitle='Your trusted partner'
+            title='TPP App'
+            subtitle='Tracking your finances'
           />
           <View className='bg-green-100 px-3 py-1 rounded-full'>
-            <Text className='text-green-800 text-xs font-semibold'>SECURE</Text>
+            <Text className='text-green-800 text-xs font-semibold'>
+              BẢO MẬT
+            </Text>
           </View>
         </View>
       </View>
@@ -166,12 +209,12 @@ export default function ConsentScreen() {
           {/* Title Section */}
           <View className='mb-6'>
             <Text className='text-2xl font-bold text-gray-900 mb-2'>
-              Data Access Request
+              Yêu Cầu Truy Cập Dữ Liệu
             </Text>
             <Text className='text-gray-600 text-base leading-6'>
-              <Text className='font-semibold'>FinTech Solutions Ltd.</Text> is
-              requesting access to your banking data. Please review and select
-              the permissions you want to grant.
+              <Text className='font-semibold'>TPP App</Text> đang yêu cầu truy
+              cập vào dữ liệu ngân hàng của bạn. Vui lòng xem xét và chọn các
+              quyền bạn muốn cấp phép.
             </Text>
           </View>
 
@@ -183,18 +226,19 @@ export default function ConsentScreen() {
           >
             <View className='flex-row items-start gap-2'>
               <View className='w-12 h-12 bg-blue-600 rounded-lg items-center justify-center mr-4'>
-                <Ionicons name='business' size={24} color='#ffffff' />
+                <Ionicons name='wallet' size={24} color='#ffffff' />
               </View>
               <View className='flex-1'>
                 <Text className='font-bold text-blue-900 text-lg mb-1'>
-                  FinTech Solutions Ltd.
+                  TPP App
                 </Text>
                 <Text className='text-blue-800 text-sm mb-2'>
-                  Licensed Third Party Provider
+                  Ứng dụng Quản lý Tài chính Cá nhân
                 </Text>
                 <Text className='text-blue-700 text-xs leading-4'>
-                  FCA Registration: 123456789{'\n'}
-                  Purpose: Personal Finance Management
+                  Đăng ký TPP: MT-2024-001{'\n'}
+                  Mục đích: Theo dõi và phân tích chi tiêu cá nhân{'\n'}
+                  Nhà phát triển: FinTech Vietnam Co., Ltd.
                 </Text>
               </View>
             </View>
@@ -204,11 +248,11 @@ export default function ConsentScreen() {
           <View className='mb-6'>
             <View className='flex-row items-center justify-between mb-4'>
               <Text className='text-lg font-semibold text-gray-900'>
-                Requested Permissions
+                Các Yêu Cầu Truy Cập Dữ Liệu Của Chúng Tôi
               </Text>
-              <Text className='text-sm text-gray-600'>
-                {enabledCount} of {permissions.length} selected
-              </Text>
+              {/* <Text className='text-sm text-gray-600'>
+                {enabledCount} / {permissions.length} được chọn
+              </Text> */}
             </View>
 
             <View className='gap-3'>
@@ -223,30 +267,33 @@ export default function ConsentScreen() {
                       : 'border-gray-200 bg-white'
                   }`}
                 >
-                  <Checkbox
-                    checked={permission.enabled}
-                    onPress={() => togglePermission(permission.id)}
-                    disabled={permission.required}
-                    label={
-                      <View className='flex-row items-center'>
-                        <Text className='font-semibold text-gray-900'>
+                  <View className='flex-row items-start gap-3'>
+                    <Checkbox
+                      // checked={permission.enabled}
+                      checked={true}
+                      onPress={() => togglePermission(permission.id)}
+                      // disabled={permission.required}
+                      size='md'
+                      variant='primary'
+                    />
+                    <View className='flex-1'>
+                      <View className='flex-row items-center mb-1'>
+                        <Text className='font-semibold text-gray-900 flex-1'>
                           {permission.title}
                         </Text>
-                        {permission.required && (
+                        {/* {permission.required && (
                           <View className='ml-2 bg-red-100 px-2 py-0.5 rounded'>
                             <Text className='text-red-800 text-xs font-medium'>
-                              Required
+                              Bắt buộc
                             </Text>
                           </View>
-                        )}
+                        )} */}
                       </View>
-                    }
-                    description={permission.description}
-                    size='md'
-                    variant='primary'
-                    className='flex-row items-start'
-                    labelClassName='flex-1'
-                  />
+                      <Text className='text-gray-600 text-sm leading-4'>
+                        {permission.description}
+                      </Text>
+                    </View>
+                  </View>
                 </Card>
               ))}
             </View>
@@ -267,13 +314,15 @@ export default function ConsentScreen() {
               />
               <View className='flex-1'>
                 <Text className='font-semibold text-yellow-800 text-sm mb-2'>
-                  How your data will be used
+                  Dữ liệu của bạn sẽ được sử dụng như thế nào
                 </Text>
                 <Text className='text-yellow-700 text-xs leading-4'>
-                  • Data will be used solely for personal finance management
-                  {'\n'}• Information will be stored securely and encrypted
-                  {'\n'}• You can revoke access at any time{'\n'}• Data will not
-                  be shared with other third parties
+                  • Dữ liệu chỉ được sử dụng cho mục đích quản lý tài chính cá
+                  nhân
+                  {'\n'}• Thông tin sẽ được lưu trữ an toàn và mã hóa
+                  {'\n'}• Bạn có thể thu hồi quyền truy cập bất cứ lúc nào
+                  {'\n'}• Dữ liệu sẽ không được chia sẻ với bên thứ ba khác
+                  {'\n'}• Tuân thủ đầy đủ các quy định về bảo mật ngân hàng
                 </Text>
               </View>
             </View>
@@ -282,7 +331,7 @@ export default function ConsentScreen() {
           {/* Action Buttons */}
           <View className='gap-3'>
             <Button
-              title='Allow Access'
+              title='Cho Phép Truy Cập'
               onPress={handleAllow}
               isLoading={isLoading}
               disabled={enabledCount === 0}
@@ -291,7 +340,7 @@ export default function ConsentScreen() {
             />
 
             <Button
-              title='Deny Access'
+              title='Từ Chối Truy Cập'
               onPress={handleDeny}
               variant='outline'
               size='lg'
@@ -304,13 +353,13 @@ export default function ConsentScreen() {
             <View className='flex-row items-center justify-center mb-2'>
               <Ionicons name='shield-checkmark' size={16} color='#059669' />
               <Text className='text-green-700 text-sm font-medium ml-2'>
-                Protected by bank-grade security
+                Được bảo vệ bởi bảo mật cấp ngân hàng
               </Text>
             </View>
             <Text className='text-gray-500 text-xs text-center leading-4'>
-              This consent is governed by Open Banking regulations and PSD2
-              compliance. Your data is protected under GDPR and banking privacy
-              laws.
+              Sự đồng ý này được điều chỉnh bởi các quy định Open Banking và
+              tuân thủ PSD2. Dữ liệu của bạn được bảo vệ theo GDPR và luật bảo
+              mật ngân hàng Việt Nam.
             </Text>
           </View>
         </View>

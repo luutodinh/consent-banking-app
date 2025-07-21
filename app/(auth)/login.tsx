@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
@@ -79,7 +78,8 @@ export default function LoginScreen() {
       // Mock authentication logic
       if (form.username === 'admin' && form.password === 'password') {
         // Navigate to consent page
-        router.replace('/consent');
+        // router.replace('/consent');
+        // Linking.openURL('consentbanking://open');/
       } else {
         Alert.alert(
           'Login Failed',
@@ -97,6 +97,11 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
+
+  // useMemo(() => {
+  // Linking.openURL('consentbanking://open');
+  // Linking.openURL('exp://192.168.2.176:8082');
+  // }, []);
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50'>
@@ -117,8 +122,8 @@ export default function LoginScreen() {
               <Logo
                 size='xl'
                 variant='vertical'
-                title='Banking Portal'
-                subtitle='Third Party Provider Access'
+                title='Spending Tracker'
+                subtitle='Analyze Your Money'
                 className='mb-6'
               />
 
@@ -126,7 +131,7 @@ export default function LoginScreen() {
                 Welcome Back
               </Text>
               <Text className='text-gray-600 text-center text-base'>
-                Sign in to access your banking services
+                Sign in to access spending tracker services
               </Text>
             </View>
 
