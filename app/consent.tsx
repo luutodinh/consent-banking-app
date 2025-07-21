@@ -2,7 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import {
+  Alert,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -90,8 +97,8 @@ export default function ConsentScreen() {
 
     if (enabledPermissions.length === 0) {
       Alert.alert(
-        'No Permissions Selected',
-        'Please select at least one permission to continue.',
+        'Chưa chọn quyền nào',
+        'Vui lòng chọn ít nhất một quyền để tiếp tục.',
         [{ text: 'OK' }]
       );
       return;
@@ -103,20 +110,22 @@ export default function ConsentScreen() {
       // Simulate API call to grant permissions
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
+      Linking.openURL('spendingtracker://user-info?code=abc');
+
       Alert.alert(
-        'Access Granted',
-        'You have successfully granted access to your banking data. The third-party provider can now access the selected information.',
+        'Cấp quyền thành công',
+        'Bạn đã cấp quyền truy cập dữ liệu ngân hàng thành công. Bên thứ ba giờ đây có thể truy cập thông tin đã chọn.',
         [
           {
-            text: 'Continue',
-            onPress: () => router.replace('/(tabs)'),
+            text: 'Xem thông tin',
+            // onPress: () => router.replace('/'),
           },
         ]
       );
     } catch (error) {
       Alert.alert(
-        'Error',
-        'An error occurred while processing your consent. Please try again.',
+        'Lỗi',
+        'Đã xảy ra lỗi khi xử lý quyền truy cập của bạn. Vui lòng thử lại.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -126,12 +135,12 @@ export default function ConsentScreen() {
 
   const handleDeny = () => {
     Alert.alert(
-      'Deny Access',
-      'Are you sure you want to deny access? This will prevent the third-party provider from accessing your banking data.',
+      'Từ chối truy cập',
+      'Bạn có chắc chắn muốn từ chối truy cập? Điều này sẽ ngăn bên thứ ba truy cập dữ liệu ngân hàng của bạn.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Hủy', style: 'cancel' },
         {
-          text: 'Deny Access',
+          text: 'Từ chối',
           style: 'destructive',
           onPress: () => router.replace('/(auth)/login'),
         },
@@ -166,12 +175,12 @@ export default function ConsentScreen() {
           {/* Title Section */}
           <View className='mb-6'>
             <Text className='text-2xl font-bold text-gray-900 mb-2'>
-              Data Access Request
+              Yêu cầu truy cập dữ liệu
             </Text>
             <Text className='text-gray-600 text-base leading-6'>
-              <Text className='font-semibold'>FinTech Solutions Ltd.</Text> is
-              requesting access to your banking data. Please review and select
-              the permissions you want to grant.
+              <Text className='font-semibold'>FinTech Solutions Ltd.</Text> đang
+              yêu cầu truy cập dữ liệu ngân hàng của bạn. Vui lòng xem xét và
+              chọn các quyền bạn muốn cấp.
             </Text>
           </View>
 
@@ -204,7 +213,7 @@ export default function ConsentScreen() {
           <View className='mb-6'>
             <View className='flex-row items-center justify-between mb-4'>
               <Text className='text-lg font-semibold text-gray-900'>
-                Requested Permissions
+                Quyền được yêu cầu
               </Text>
               <Text className='text-sm text-gray-600'>
                 {enabledCount} of {permissions.length} selected
@@ -267,13 +276,13 @@ export default function ConsentScreen() {
               />
               <View className='flex-1'>
                 <Text className='font-semibold text-yellow-800 text-sm mb-2'>
-                  How your data will be used
+                  Cách dữ liệu của bạn sẽ được sử dụng
                 </Text>
                 <Text className='text-yellow-700 text-xs leading-4'>
-                  • Data will be used solely for personal finance management
-                  {'\n'}• Information will be stored securely and encrypted
-                  {'\n'}• You can revoke access at any time{'\n'}• Data will not
-                  be shared with other third parties
+                  • Dữ liệu sẽ chỉ được sử dụng cho quản lý tài chính cá nhân
+                  {'\n'}• Thông tin sẽ được lưu trữ an toàn và mã hóa
+                  {'\n'}• Bạn có thể thu hồi quyền truy cập bất cứ lúc nào{'\n'}
+                  • Dữ liệu sẽ không được chia sẻ với bên thứ ba khác
                 </Text>
               </View>
             </View>
@@ -282,7 +291,7 @@ export default function ConsentScreen() {
           {/* Action Buttons */}
           <View className='gap-3'>
             <Button
-              title='Allow Access'
+              title='Cho phép truy cập'
               onPress={handleAllow}
               isLoading={isLoading}
               disabled={enabledCount === 0}
@@ -291,7 +300,7 @@ export default function ConsentScreen() {
             />
 
             <Button
-              title='Deny Access'
+              title='Từ chối truy cập'
               onPress={handleDeny}
               variant='outline'
               size='lg'
