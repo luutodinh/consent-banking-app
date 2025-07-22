@@ -25,7 +25,7 @@ export default function RootLayout() {
 
   // useEffect(() => {
   //   const subscription = Linking.addEventListener('url', ({ url }) => {
-  //     console.log('📦This is spending tracker', url);
+  //     console.log('📦This is consent banking', url);
   //   });
 
   //   return () => subscription.remove();

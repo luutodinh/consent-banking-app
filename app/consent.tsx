@@ -133,8 +133,8 @@ export default function ConsentScreen() {
     } catch (error) {
       Alert.alert(
         'Lỗi',
-        'Đã xảy ra lỗi khi xử lý sự đồng ý của bạn. Vui lòng thử lại.',
-        [{ text: 'Đồng Ý' }]
+        'Đã xảy ra lỗi khi xử lý quyền truy cập của bạn. Vui lòng thử lại.',
+        [{ text: 'OK' }]
       );
     } finally {
       setIsLoading(false);
@@ -143,12 +143,12 @@ export default function ConsentScreen() {
 
   const handleDeny = () => {
     Alert.alert(
-      'Từ Chối Truy Cập',
-      'Bạn có chắc chắn muốn từ chối truy cập? Điều này sẽ ngăn ứng dụng MoneyTracker truy cập vào dữ liệu ngân hàng của bạn.',
+      'Từ chối truy cập',
+      'Bạn có chắc chắn muốn từ chối truy cập? Điều này sẽ ngăn bên thứ ba truy cập dữ liệu ngân hàng của bạn.',
       [
         { text: 'Hủy', style: 'cancel' },
         {
-          text: 'Từ Chối',
+          text: 'Từ chối',
           style: 'destructive',
           onPress: () => router.replace('/(auth)/login'),
         },

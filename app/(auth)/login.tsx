@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
@@ -13,7 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import Input from '@/components/ui/Input';
 import Logo from '@/components/ui/Logo';
 
 interface LoginForm {
@@ -33,6 +33,24 @@ export default function LoginScreen() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    client_id,
+    redirect_uri,
+    keycloak_url,
+    realm,
+    client_secret,
+    code_challenge,
+  } = useLocalSearchParams<{
+    client_id: string;
+    redirect_uri: string;
+    keycloak_url: string;
+    realm: string;
+    client_secret: string;
+    code_challenge: string;
+  }>();
+
+  const router = useRouter();
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -65,28 +83,29 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    // if (!validateForm()) {
+    //   return;
+    // }
 
     setIsLoading(true);
 
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
+      router.push('/consent');
+      // Linking.openURL('spendingtracker://user-info?code=abc');
+      // Linking.openURL('exp://192.168.2.176:8082');
 
       // Mock authentication logic
-      if (form.username === 'admin' && form.password === 'password') {
-        // Navigate to consent page
-        // router.replace('/consent');
-        // Linking.openURL('consentbanking://open');/
-      } else {
-        Alert.alert(
-          'Login Failed',
-          'Invalid username or password. Please try again.',
-          [{ text: 'OK' }]
-        );
-      }
+      // if (form.username === 'admin' && form.password === 'password') {
+      //   // Navigate to consent page
+      // } else {
+      //   Alert.alert(
+      //     'Login Failed',
+      //     'Invalid username or password. Please try again.',
+      //     [{ text: 'OK' }]
+      //   );
+      // }
     } catch (error) {
       Alert.alert(
         'Error',
@@ -133,12 +152,31 @@ export default function LoginScreen() {
               <Text className='text-gray-600 text-center text-base'>
                 Sign in to access spending tracker services
               </Text>
+
+              <Text className='text-gray-500 text-sm mt-2'>
+                {client_id
+                  ? `Client ID: ${client_id}`
+                  : 'Client ID not provided'}
+                {redirect_uri
+                  ? `Redirect URI: ${redirect_uri}`
+                  : 'Redirect URI not provided'}
+                {keycloak_url
+                  ? `Keycloak URL: ${keycloak_url}`
+                  : 'Keycloak URL not provided'}
+                {realm ? `Realm: ${realm}` : 'Realm not provided'}
+                {client_secret
+                  ? `Client Secret: ${client_secret}`
+                  : 'Client Secret not provided'}
+                {code_challenge
+                  ? `Code Challenge: ${code_challenge}`
+                  : 'Code Challenge not provided'}
+              </Text>
             </View>
 
             {/* Login Form */}
             <Card variant='elevated' padding='lg' className='mb-6'>
               <View className='space-y-4'>
-                <Input
+                {/* <Input
                   label='Username'
                   placeholder='Enter your username'
                   value={form.username}
@@ -169,13 +207,13 @@ export default function LoginScreen() {
                     />
                   }
                   containerClassName='mb-6'
-                />
+                /> */}
 
                 <Button
                   title='Sign In'
                   onPress={handleLogin}
                   isLoading={isLoading}
-                  disabled={!form.username || !form.password}
+                  // disabled={!form.username || !form.password}
                   className='mb-4'
                 />
               </View>
