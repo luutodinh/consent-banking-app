@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { Input } from '@/components/ui';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Logo from '@/components/ui/Logo';
@@ -178,7 +179,7 @@ export default function LoginScreen() {
             {/* Login Form */}
             <Card variant='elevated' padding='lg' className='mb-6'>
               <View className='space-y-4'>
-                {/* <Input
+                <Input
                   label='Username'
                   placeholder='Enter your username'
                   value={form.username}
@@ -209,7 +210,7 @@ export default function LoginScreen() {
                     />
                   }
                   containerClassName='mb-6'
-                /> */}
+                />
 
                 <Button
                   title='Sign In'

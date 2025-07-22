@@ -3,11 +3,11 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start --port 8082",
+    "start": "expo start --port 8081",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "env-cmd -f .env/.env.development expo start --android --port 8082",
-    "ios": "env-cmd -f .env/.env.development expo start --ios --port 8082",
-    "web": "env-cmd -f .env/.env.development expo start --web --port 8082",
+    "android": "env-cmd -f .env/.env.development expo start --android --port 8081",
+    "ios": "env-cmd -f .env/.env.development expo start --ios --port 8081",
+    "web": "env-cmd -f .env/.env.development expo start --web --port 8081",
     "lint": "expo lint"
   },
   "dependencies": {
