@@ -64,7 +64,8 @@ const Input: React.FC<InputProps> = ({
   };
 
   const getLabelStyles = (): string => {
-    const baseStyles = 'text-sm font-medium mb-1';
+    const baseStyles =
+      'text-sm font-medium mb-1 focus:border-blue-500 focus:shadow-sm border-gray-300';
     const colorStyles = hasError ? 'text-red-600' : 'text-gray-700';
     return cn(baseStyles, colorStyles, labelClassName);
   };
@@ -89,8 +90,8 @@ const Input: React.FC<InputProps> = ({
           className={getInputStyles()}
           value={value}
           onChangeText={onChangeText}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          // onFocus={() => setIsFocused(true)}
+          // onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword && !isPasswordVisible}
           placeholderTextColor='#9CA3AF'
           accessibilityLabel={label}

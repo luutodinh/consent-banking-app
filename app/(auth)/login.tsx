@@ -84,31 +84,30 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
-    // if (!validateForm()) {
-    //   return;
-    // }
+    if (!validateForm()) {
+      return;
+    }
 
     setIsLoading(true);
 
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-       router.push('/consent');
-      
+
       // Linking.openURL('spendingtracker://user-info?code=abc');
       // Linking.openURL('exp://192.168.2.176:8082');
 
       // Mock authentication logic
-      // if (form.username === 'admin' && form.password === 'password') {
-      //   // Navigate to consent page
-      // } else {
-      //   Alert.alert(
-      //     'Login Failed',
-      //     'Invalid username or password. Please try again.',
-      //     [{ text: 'OK' }]
-      //   );
-      // }
+      if (form.username === 'admin' && form.password === 'password') {
+        // Navigate to consent page
+        router.push('/consent');
+      } else {
+        Alert.alert(
+          'Login Failed',
+          'Invalid username or password. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
     } catch (error) {
       Alert.alert(
         'Error',
@@ -119,11 +118,6 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
-
-  // useMemo(() => {
-  // Linking.openURL('consentbanking://open');
-  // Linking.openURL('exp://192.168.2.176:8082');
-  // }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
