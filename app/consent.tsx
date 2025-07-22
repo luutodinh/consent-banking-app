@@ -3,12 +3,11 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
-  Alert,
-  Linking,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    View
 } from 'react-native';
 
 import Button from '@/components/ui/Button';
@@ -23,58 +22,66 @@ interface Permission {
   icon: keyof typeof Ionicons.glyphMap;
   required: boolean;
   enabled: boolean;
+  scope: string; // API scope
 }
 
 const PERMISSIONS: Permission[] = [
   {
     id: 'account_info',
-    title: 'Account Information',
+    title: 'Thông tin tài khoản',
     description:
-      'Access to your account details, account numbers, and basic account information',
+      'Truy cập thông tin tài khoản, số tài khoản, và thông tin cơ bản của bạn',
     icon: 'card-outline',
     required: true,
     enabled: true,
+    scope: 'AIS',
   },
   {
     id: 'balance',
-    title: 'Account Balance',
-    description: 'View current account balances and available funds',
+    title: 'Số dư tài khoản',
+    description: 'Xem số dư tài khoản hiện tại và tiền khả dụng',
     icon: 'wallet-outline',
     required: true,
     enabled: true,
+    scope: 'AIS',
   },
   {
     id: 'transactions',
-    title: 'Transaction History',
-    description: 'Access to your transaction history for the past 12 months',
+    title: 'Lịch sử giao dịch',
+    description: 'Truy cập lịch sử giao dịch của bạn trong 12 tháng qua',
     icon: 'list-outline',
     required: false,
     enabled: true,
+    scope: 'AIS',
   },
   {
-    id: 'standing_orders',
-    title: 'Standing Orders',
-    description: 'View and manage your recurring payments and standing orders',
-    icon: 'repeat-outline',
+    id: 'payment_initiation',
+    title: 'Khởi tạo thanh toán',
+    description:
+      'Cho phép thực hiện thanh toán từ tài khoản của bạn',
+    icon: 'cash-outline',
     required: false,
     enabled: false,
+    scope: 'PIS',
+  },
+  {
+    id: 'ewallet_integration',
+    title: 'Liên kết ví điện tử',
+    description: 'Cho phép nạp tiền vào và rút tiền từ ví điện tử',
+    icon: 'phone-portrait-outline',
+    required: false,
+    enabled: false,
+    scope: 'EWLT',
   },
   {
     id: 'direct_debits',
-    title: 'Direct Debits',
+    title: 'Ghi nợ trực tiếp',
     description:
-      'Access to your direct debit information and payment schedules',
+      'Truy cập thông tin ghi nợ trực tiếp và lịch thanh toán',
     icon: 'arrow-down-circle-outline',
     required: false,
     enabled: false,
-  },
-  {
-    id: 'beneficiaries',
-    title: 'Saved Beneficiaries',
-    description: 'Access to your saved payment recipients and beneficiary list',
-    icon: 'people-outline',
-    required: false,
-    enabled: false,
+    scope: 'AIS',
   },
 ];
 
@@ -92,6 +99,13 @@ export default function ConsentScreen() {
     );
   };
 
+  // Tạo danh sách các scope đã chọn
+  const getSelectedScopes = () => {
+    const enabledPermissions = permissions.filter((p) => p.enabled);
+    // Loại bỏ trùng lặp scope
+    return [...new Set(enabledPermissions.map((p) => p.scope))];
+  };
+
   const handleAllow = async () => {
     const enabledPermissions = permissions.filter((p) => p.enabled);
 
@@ -107,18 +121,23 @@ export default function ConsentScreen() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to grant permissions
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Lấy danh sách scope đã chọn
+      const scopes = getSelectedScopes();
+      console.log('Selected scopes:', scopes);
 
-      Linking.openURL('spendingtracker://user-info?code=abc');
+      // Giả định lưu thông tin đồng ý
+      localStorage.setItem('approved_scopes', JSON.stringify(scopes));
+      
+      // Giả định kết nối với API OAuth
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       Alert.alert(
         'Cấp quyền thành công',
         'Bạn đã cấp quyền truy cập dữ liệu ngân hàng thành công. Bên thứ ba giờ đây có thể truy cập thông tin đã chọn.',
         [
           {
-            text: 'Xem thông tin',
-            // onPress: () => router.replace('/'),
+            text: 'Xem tài khoản',
+            onPress: () => router.replace('/'),
           },
         ]
       );
@@ -152,25 +171,25 @@ export default function ConsentScreen() {
   const requiredCount = permissions.filter((p) => p.required).length;
 
   return (
-    <SafeAreaView className='flex-1 bg-white'>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <StatusBar style='dark' backgroundColor='#ffffff' />
 
       {/* Header */}
-      <View className='bg-white border-b border-gray-200 px-6 py-4'>
-        <View className='flex-row items-center justify-between'>
+      <View style={{ backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb', paddingHorizontal: 24, paddingVertical: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo
             size='sm'
             variant='horizontal'
-            title='SecureBank'
-            subtitle='Your trusted partner'
+            title='OpenBank API'
+            subtitle='Ngân hàng mở'
           />
-          <View className='bg-green-100 px-3 py-1 rounded-full'>
-            <Text className='text-green-800 text-xs font-semibold'>SECURE</Text>
+          <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 }}>
+            <Text style={{ color: '#166534', fontSize: 12, fontWeight: '600' }}>SECURE</Text>
           </View>
         </View>
       </View>
 
-      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View className='px-6 py-6'>
           {/* Title Section */}
           <View className='mb-6'>
@@ -178,7 +197,7 @@ export default function ConsentScreen() {
               Yêu cầu truy cập dữ liệu
             </Text>
             <Text className='text-gray-600 text-base leading-6'>
-              <Text className='font-semibold'>FinTech Solutions Ltd.</Text> đang
+              <Text className='font-semibold'>Open Banking API</Text> đang
               yêu cầu truy cập dữ liệu ngân hàng của bạn. Vui lòng xem xét và
               chọn các quyền bạn muốn cấp.
             </Text>
@@ -196,14 +215,14 @@ export default function ConsentScreen() {
               </View>
               <View className='flex-1'>
                 <Text className='font-bold text-blue-900 text-lg mb-1'>
-                  FinTech Solutions Ltd.
+                  Open Banking API
                 </Text>
                 <Text className='text-blue-800 text-sm mb-2'>
-                  Licensed Third Party Provider
+                  Nhà cung cấp dịch vụ được cấp phép
                 </Text>
                 <Text className='text-blue-700 text-xs leading-4'>
-                  FCA Registration: 123456789{'\n'}
-                  Purpose: Personal Finance Management
+                  Đăng ký: VN-TPP-123456789{'\n'}
+                  Mục đích: Quản lý tài chính cá nhân
                 </Text>
               </View>
             </View>
@@ -216,7 +235,7 @@ export default function ConsentScreen() {
                 Quyền được yêu cầu
               </Text>
               <Text className='text-sm text-gray-600'>
-                {enabledCount} of {permissions.length} selected
+                {enabledCount} trên {permissions.length} đã chọn
               </Text>
             </View>
 
@@ -236,26 +255,18 @@ export default function ConsentScreen() {
                     checked={permission.enabled}
                     onPress={() => togglePermission(permission.id)}
                     disabled={permission.required}
-                    label={
-                      <View className='flex-row items-center'>
-                        <Text className='font-semibold text-gray-900'>
-                          {permission.title}
-                        </Text>
-                        {permission.required && (
-                          <View className='ml-2 bg-red-100 px-2 py-0.5 rounded'>
-                            <Text className='text-red-800 text-xs font-medium'>
-                              Required
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    }
+                    label={permission.title}
                     description={permission.description}
                     size='md'
                     variant='primary'
                     className='flex-row items-start'
                     labelClassName='flex-1'
                   />
+                  <View className="mt-1 bg-gray-100 self-start px-2 py-1 rounded">
+                    <Text className="text-xs text-gray-600">
+                      Phạm vi: {permission.scope}
+                    </Text>
+                  </View>
                 </Card>
               ))}
             </View>
@@ -282,7 +293,7 @@ export default function ConsentScreen() {
                   • Dữ liệu sẽ chỉ được sử dụng cho quản lý tài chính cá nhân
                   {'\n'}• Thông tin sẽ được lưu trữ an toàn và mã hóa
                   {'\n'}• Bạn có thể thu hồi quyền truy cập bất cứ lúc nào{'\n'}
-                  • Dữ liệu sẽ không được chia sẻ với bên thứ ba khác
+                  • Quyền truy cập sẽ hết hạn sau 90 ngày
                 </Text>
               </View>
             </View>
@@ -313,13 +324,12 @@ export default function ConsentScreen() {
             <View className='flex-row items-center justify-center mb-2'>
               <Ionicons name='shield-checkmark' size={16} color='#059669' />
               <Text className='text-green-700 text-sm font-medium ml-2'>
-                Protected by bank-grade security
+                Bảo vệ bởi bảo mật tiêu chuẩn ngân hàng
               </Text>
             </View>
             <Text className='text-gray-500 text-xs text-center leading-4'>
-              This consent is governed by Open Banking regulations and PSD2
-              compliance. Your data is protected under GDPR and banking privacy
-              laws.
+              Việc đồng ý này tuân theo các quy định của Open Banking và tuân thủ PSD2. 
+              Dữ liệu của bạn được bảo vệ theo GDPR và luật bảo mật ngân hàng.
             </Text>
           </View>
         </View>

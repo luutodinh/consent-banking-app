@@ -6,11 +6,11 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -92,7 +92,9 @@ export default function LoginScreen() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.push('/consent');
+      
+       router.push('/consent');
+      
       // Linking.openURL('spendingtracker://user-info?code=abc');
       // Linking.openURL('exp://192.168.2.176:8082');
 
@@ -118,14 +120,14 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className='flex-1 bg-gray-50'>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       <StatusBar style='dark' />
       <KeyboardAvoidingView
-        className='flex-1'
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          className='flex-1'
+          style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps='handled'
           showsVerticalScrollIndicator={false}
