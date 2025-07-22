@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -34,6 +34,10 @@ export default function LoginScreen() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [redirectError, setRedirectError] = useState<{
+    error: string;
+    error_description: string;
+  } | null>(null);
 
   const {
     client_id,
@@ -42,6 +46,9 @@ export default function LoginScreen() {
     realm,
     client_secret,
     code_challenge,
+    error,
+    error_description,
+    state,
   } = useLocalSearchParams<{
     client_id: string;
     redirect_uri: string;
@@ -49,9 +56,22 @@ export default function LoginScreen() {
     realm: string;
     client_secret: string;
     code_challenge: string;
+    error: string;
+    error_description: string;
+    state: string;
   }>();
 
   const router = useRouter();
+
+  // Xử lý lỗi redirect_uri khi component được mount
+  useEffect(() => {
+    if (error && error === 'invalid_redirect_uri') {
+      setRedirectError({
+        error,
+        error_description: error_description || 'Lỗi không xác định',
+      });
+    }
+  }, [error, error_description]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -156,6 +176,15 @@ export default function LoginScreen() {
                 Sign in to access spending tracker services
               </Text>
 
+              {/* Hiển thị thông báo lỗi redirect_uri nếu có */}
+              {redirectError && (
+                <View className='mt-4 bg-red-50 p-4 rounded-lg border border-red-300 w-full'>
+                  <Text className='text-red-800 font-bold mb-1'>Lỗi Xác Thực:</Text>
+                  <Text className='text-red-700'>{redirectError.error}</Text>
+                  <Text className='text-red-700 mt-1'>{redirectError.error_description}</Text>
+                </View>
+              )}
+
               <Text className='text-gray-500 text-sm mt-2'>
                 {client_id
                   ? `Client ID: ${client_id}`
@@ -173,6 +202,9 @@ export default function LoginScreen() {
                 {code_challenge
                   ? `Code Challenge: ${code_challenge}`
                   : 'Code Challenge not provided'}
+                {state
+                  ? `State: ${state}`
+                  : ''}
               </Text>
             </View>
 
