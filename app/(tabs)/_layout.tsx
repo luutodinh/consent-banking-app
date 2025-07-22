@@ -1,12 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
-
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
+import BlurTabBarBackground from '@/components/ui/TabBarBackground.ios';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -17,7 +15,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        tabBarBackground: BlurTabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
@@ -25,40 +23,24 @@ export default function TabLayout() {
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name='index'
         options={{
-          title: 'Trang chủ',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Home',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name='house.fill' color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="accounts"
+        name='explore'
         options={{
-          title: 'Tài khoản',
-          tabBarIcon: ({ color }) => <Ionicons name="wallet-outline" size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="account-details"
-        options={{
-          title: 'Chi tiết',
-          href: null, // Ẩn tab này khỏi tab bar
-        }}
-      />
-      <Tabs.Screen
-        name="transactions"
-        options={{
-          title: 'Giao dịch',
-          href: null, // Ẩn tab này khỏi tab bar
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Tiện ích',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Explore',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name='paperplane.fill' color={color} />
+          ),
         }}
       />
     </Tabs>

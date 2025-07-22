@@ -119,6 +119,11 @@ export default function LoginScreen() {
     }
   };
 
+  // useMemo(() => {
+  // Linking.openURL('consentbanking://open');
+  // Linking.openURL('exp://192.168.2.176:8082');
+  // }, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       <StatusBar style='dark' />
@@ -138,8 +143,8 @@ export default function LoginScreen() {
               <Logo
                 size='xl'
                 variant='vertical'
-                title='Banking Portal'
-                subtitle='Third Party Provider Access'
+                title='Spending Tracker'
+                subtitle='Analyze Your Money'
                 className='mb-6'
               />
 
@@ -147,7 +152,7 @@ export default function LoginScreen() {
                 Welcome Back
               </Text>
               <Text className='text-gray-600 text-center text-base'>
-                Sign in to access your banking services
+                Sign in to access spending tracker services
               </Text>
 
               <Text className='text-gray-500 text-sm mt-2'>

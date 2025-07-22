@@ -1,13 +1,13 @@
+import { cn } from '@/utils/cn';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
   Text,
   TextInput,
-  TouchableOpacity,
   TextInputProps,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { cn } from '@/utils/cn';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -46,15 +46,14 @@ const Input: React.FC<InputProps> = ({
   const hasValue = !!value;
 
   const getInputContainerStyles = (): string => {
-    const baseStyles = 'flex-row items-center border rounded-lg px-3 py-3 bg-white';
-    
-    const focusStyles = isFocused 
-      ? 'border-blue-500 shadow-sm' 
+    const baseStyles =
+      'flex-row items-center border rounded-lg px-3 py-3 bg-white';
+
+    const focusStyles = isFocused
+      ? 'border-blue-500 shadow-sm'
       : 'border-gray-300';
-    
-    const errorStyles = hasError 
-      ? 'border-red-500' 
-      : '';
+
+    const errorStyles = hasError ? 'border-red-500' : '';
 
     return cn(baseStyles, focusStyles, errorStyles);
   };
@@ -79,17 +78,13 @@ const Input: React.FC<InputProps> = ({
       {label && (
         <Text className={getLabelStyles()}>
           {label}
-          {required && <Text className="text-red-500 ml-1">*</Text>}
+          {required && <Text className='text-red-500 ml-1'>*</Text>}
         </Text>
       )}
-      
+
       <View className={getInputContainerStyles()}>
-        {leftIcon && (
-          <View className="mr-3">
-            {leftIcon}
-          </View>
-        )}
-        
+        {leftIcon && <View className='mr-3'>{leftIcon}</View>}
+
         <TextInput
           className={getInputStyles()}
           value={value}
@@ -97,44 +92,40 @@ const Input: React.FC<InputProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword && !isPasswordVisible}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor='#9CA3AF'
           accessibilityLabel={label}
           accessibilityHint={helperText}
           {...props}
         />
-        
+
         {isPassword && (
           <TouchableOpacity
             onPress={togglePasswordVisibility}
-            className="ml-3"
-            accessibilityRole="button"
-            accessibilityLabel={isPasswordVisible ? "Hide password" : "Show password"}
+            className='ml-3'
+            accessibilityRole='button'
+            accessibilityLabel={
+              isPasswordVisible ? 'Hide password' : 'Show password'
+            }
           >
             <Ionicons
-              name={isPasswordVisible ? "eye-off" : "eye"}
+              name={isPasswordVisible ? 'eye-off' : 'eye'}
               size={20}
-              color="#6B7280"
+              color='#6B7280'
             />
           </TouchableOpacity>
         )}
-        
-        {rightIcon && !isPassword && (
-          <View className="ml-3">
-            {rightIcon}
-          </View>
-        )}
+
+        {rightIcon && !isPassword && <View className='ml-3'>{rightIcon}</View>}
       </View>
-      
+
       {error && (
         <Text className={cn('text-red-500 text-sm mt-1', errorClassName)}>
           {error}
         </Text>
       )}
-      
+
       {helperText && !error && (
-        <Text className="text-gray-500 text-sm mt-1">
-          {helperText}
-        </Text>
+        <Text className='text-gray-500 text-sm mt-1'>{helperText}</Text>
       )}
     </View>
   );
