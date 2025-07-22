@@ -104,7 +104,7 @@ export default function LoginScreen() {
   // }, []);
 
   return (
-    <SafeAreaView className='flex-1 bg-gray-50'>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       <StatusBar style='dark' />
       <KeyboardAvoidingView
         className='flex-1'

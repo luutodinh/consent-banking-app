@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
@@ -25,76 +25,52 @@ import {
   REDIRECT_URI,
   SCOPE,
 } from '@/constants/env';
-import {
-  generateCodeChallenge,
-  generateCodeVerifier,
-} from '@/utils/PKCE-challenge';
+import { generatePKCE } from '@/utils/pkce';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface Permission {
+interface PermissionScope {
   id: string;
   title: string;
   description: string;
   icon: keyof typeof Ionicons.glyphMap;
   required: boolean;
   enabled: boolean;
+  apis: string[];
 }
 
-const PERMISSIONS: Permission[] = [
+const PERMISSION_SCOPES: PermissionScope[] = [
   {
-    id: 'account_info',
-    title: 'Thông Tin Tài Khoản',
-    description:
-      'Truy cập chi tiết tài khoản, số tài khoản và thông tin tài khoản cơ bản',
+    id: 'ais',
+    title: 'AIS (Account Information Services)',
+    description: 'Account Information Services - Dịch vụ thông tin tài khoản',
     icon: 'card-outline',
     required: true,
     enabled: true,
+    apis: ['accounts', 'information', 'transactions'],
   },
   {
-    id: 'balance',
-    title: 'Số Dư Tài Khoản',
-    description: 'Xem số dư tài khoản hiện tại và số tiền khả dụng',
+    id: 'pis',
+    title: 'PIS (Payment Initiation Services)',
+    description: 'Payment Initiation Services - Dịch vụ khởi tạo thanh toán',
+    icon: 'send-outline',
+    required: false,
+    enabled: true,
+    apis: ['payments', 'cash-in'],
+  },
+  {
+    id: 'ewlt',
+    title: 'EWLT (E-Wallet Services)',
+    description: 'E-Wallet Services - Dịch vụ ví điện tử',
     icon: 'wallet-outline',
-    required: true,
-    enabled: true,
-  },
-  {
-    id: 'transactions',
-    title: 'Lịch Sử Giao Dịch',
-    description: 'Truy cập lịch sử giao dịch của bạn trong 12 tháng qua',
-    icon: 'list-outline',
-    required: false,
-    enabled: true,
-  },
-  {
-    id: 'standing_orders',
-    title: 'Lệnh Chuyển Tiền Định Kỳ',
-    description:
-      'Xem và quản lý các khoản thanh toán định kỳ và lệnh chuyển tiền',
-    icon: 'repeat-outline',
     required: false,
     enabled: false,
-  },
-  {
-    id: 'direct_debits',
-    title: 'Ghi Nợ Trực Tiếp',
-    description: 'Truy cập thông tin ghi nợ trực tiếp và lịch trình thanh toán',
-    icon: 'arrow-down-circle-outline',
-    required: false,
-    enabled: false,
-  },
-  {
-    id: 'beneficiaries',
-    title: 'Người Thụ Hưởng Đã Lưu',
-    description:
-      'Truy cập danh sách người nhận thanh toán và người thụ hưởng đã lưu',
-    icon: 'people-outline',
-    required: false,
-    enabled: false,
+    apis: ['cash-out'],
   },
 ];
 
 export default function ConsentScreen() {
-  const [permissions, setPermissions] = useState<Permission[]>(PERMISSIONS);
+  const [permissions, setPermissions] =
+    useState<PermissionScope[]>(PERMISSION_SCOPES);
   const [isLoading, setIsLoading] = useState(false);
 
   const togglePermission = (id: string) => {
@@ -108,33 +84,33 @@ export default function ConsentScreen() {
   };
 
   const handleAllow = async () => {
-    const enabledPermissions = permissions.filter((p) => p.enabled);
+    // const enabledPermissions = permissions.filter((p) => p.enabled);
 
-    if (enabledPermissions.length === 0) {
-      Alert.alert(
-        'Chưa Chọn Quyền Nào',
-        'Vui lòng chọn ít nhất một quyền để tiếp tục.',
-        [{ text: 'Đồng Ý' }]
-      );
-      return;
-    }
+    // if (enabledPermissions.length === 0) {
+    //   Alert.alert(
+    //     'Chưa Chọn Quyền Nào',
+    //     'Vui lòng chọn ít nhất một quyền để tiếp tục.',
+    //     [{ text: 'Đồng Ý' }]
+    //   );
+    //   return;
+    // }
 
     setIsLoading(true);
 
     try {
       // Simulate API call to grant permissions
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      const state = crypto.randomUUID();
-      const codeVerifier = generateCodeVerifier();
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      const { code_verifier, code_challenge } = await generatePKCE();
+
+      const state = Crypto.randomUUID(); // Use Crypto.randomUUID() for state generation
 
       await AsyncStorage.setItem('state', state);
-      await AsyncStorage.setItem('code_verifier', codeVerifier);
+      await AsyncStorage.setItem('code_verifier', code_verifier);
 
       Linking.openURL(
         `${BANKING_APP_DEEP_LINK}/--/?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
           REDIRECT_URI
-        )}&realm=${REALM}&client_secret=${CLIENT_SECRET}&code_challenge=${codeChallenge}&code_challenge_method=${CODE_CHALLENGE_METHOD}&state=${state}&scope=${SCOPE}`
+        )}&realm=${REALM}&client_secret=${CLIENT_SECRET}&code_challenge=${code_challenge}&code_challenge_method=${CODE_CHALLENGE_METHOD}&state=${state}&scope=${SCOPE}`
       );
       // Linking.openURL(
       //   `http://localhost:8082?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
@@ -181,10 +157,9 @@ export default function ConsentScreen() {
   };
 
   const enabledCount = permissions.filter((p) => p.enabled).length;
-  const requiredCount = permissions.filter((p) => p.required).length;
 
   return (
-    <SafeAreaView className='flex-1 bg-white'>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <StatusBar style='dark' backgroundColor='#ffffff' />
 
       {/* Header */}
@@ -212,9 +187,10 @@ export default function ConsentScreen() {
               Yêu Cầu Truy Cập Dữ Liệu
             </Text>
             <Text className='text-gray-600 text-base leading-6'>
-              <Text className='font-semibold'>TPP App</Text> đang yêu cầu truy
-              cập vào dữ liệu ngân hàng của bạn. Vui lòng xem xét và chọn các
-              quyền bạn muốn cấp phép.
+              <Text className='font-semibold'>TPP App</Text> cần truy cập vào dữ
+              liệu ngân hàng của bạn để cung cấp các dịch vụ quản lý tài chính
+              cá nhân. Vui lòng xem xét các quyền truy cập dưới đây và đồng ý
+              nếu bạn đồng ý với các điều khoản.
             </Text>
           </View>
 
@@ -248,11 +224,11 @@ export default function ConsentScreen() {
           <View className='mb-6'>
             <View className='flex-row items-center justify-between mb-4'>
               <Text className='text-lg font-semibold text-gray-900'>
-                Các Yêu Cầu Truy Cập Dữ Liệu Của Chúng Tôi
+                Phạm Vi Quyền Truy Cập
               </Text>
-              {/* <Text className='text-sm text-gray-600'>
+              <Text className='text-sm text-gray-600'>
                 {enabledCount} / {permissions.length} được chọn
-              </Text> */}
+              </Text>
             </View>
 
             <View className='gap-3'>
@@ -289,9 +265,24 @@ export default function ConsentScreen() {
                           </View>
                         )} */}
                       </View>
-                      <Text className='text-gray-600 text-sm leading-4'>
+                      <Text className='text-gray-600 text-sm leading-4 mb-2'>
                         {permission.description}
                       </Text>
+                      <View className='flex-row flex-wrap gap-1'>
+                        <Text className='text-xs font-medium text-gray-700 mr-1'>
+                          APIs yêu cầu:
+                        </Text>
+                        {permission.apis.map((api) => (
+                          <View
+                            key={api}
+                            className='bg-gray-100 px-2 py-0.5 rounded'
+                          >
+                            <Text className='text-xs text-gray-700 font-mono'>
+                              {api}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
                     </View>
                   </View>
                 </Card>
